@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>보글하우스 4주년 · 피자 자르기</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 시작 -->
+      <section id="startScreen" class="screen active">
+        <div class="logo-mark">🍕</div>
+        <h1>보글하우스<br /><span>4주년 피자 자르기</span></h1>
+        <p class="tag">손님이 말한 개수대로, 최대한 공평하게.</p>
+        <button id="startBtn" class="btn primary">시작하기</button>
+        <p class="fine">craft beer & highball house · @bogle_house_seoul</p>
+      </section>
+
+      <!-- 게임 -->
+      <section id="gameScreen" class="screen">
+        <div id="hud">
+          <div class="hud-top">
+            <span id="roundLabel">튜토리얼</span>
+            <span id="timer">연습</span>
+          </div>
+          <div id="orderText">주문: 2조각</div>
+        </div>
+        <canvas id="game"></canvas>
+        <div id="introBubble" class="bubble"></div>
+        <button id="doneBtn" class="btn done" style="display: none">
+          완성!
+        </button>
+
+        <!-- 라운드 점수 팝업 -->
+        <div id="roundScore" class="overlay">
+          <div class="rs-card">
+            <div class="rs-fair">공평도 <b id="rsFair">–</b></div>
+            <div class="rs-score" id="rsScore">+0</div>
+            <div class="rs-bonus" id="rsBonus"></div>
+            <div class="rs-comment" id="rsComment"></div>
+            <div class="rs-hint">탭해서 계속</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 결과 -->
+      <section id="resultScreen" class="screen">
+        <h2 id="gradeLabel">완벽해요</h2>
+        <p id="gradeComment" class="comment"></p>
+        <div class="total"><b id="totalScore">0</b><span>/ 575</span></div>
+        <div id="roundBars" class="bars"></div>
+        <div class="nick-row">
+          <input id="nickInput" maxlength="8" placeholder="닉네임 (8자)" />
+          <button id="submitBtn" class="btn primary">랭킹 등록</button>
+        </div>
+        <div id="submitState" class="fine"></div>
+        <div class="btn-row">
+          <button id="shareBtn" class="btn ghost">이미지 저장</button>
+          <button class="btn ghost retryBtn">다시</button>
+        </div>
+      </section>
+
+      <!-- 랭킹 -->
+      <section id="rankScreen" class="screen">
+        <h2>랭킹</h2>
+        <div id="rankList" class="rank-list"></div>
+        <div class="btn-row">
+          <button id="backToResult" class="btn ghost">결과로</button>
+          <button class="btn primary retryBtn">다시 도전</button>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

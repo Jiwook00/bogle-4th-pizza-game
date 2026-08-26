@@ -1,0 +1,362 @@
+:root {
+  --orange: #f28c28;
+  --orange-deep: #d9701a;
+  --green: #3b7a57;
+  --crust: #e8b872;
+  --cream: #fbefd8;
+  --ink: #2a2018;
+  --bg: #1c140e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Apple SD Gothic Neo",
+    sans-serif;
+  background: var(--bg);
+  color: var(--cream);
+  overflow: hidden;
+  user-select: none;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+.screen.active {
+  display: flex;
+}
+
+/* 시작 */
+.logo-mark {
+  font-size: 72px;
+  margin-bottom: 8px;
+}
+h1 {
+  font-size: 34px;
+  line-height: 1.2;
+  color: var(--orange);
+}
+h1 span {
+  color: var(--cream);
+  font-size: 24px;
+}
+.tag {
+  margin: 16px 0 32px;
+  color: var(--crust);
+}
+.fine {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #8a7a66;
+}
+
+/* 버튼 */
+.btn {
+  border: none;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 14px 34px;
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn.primary {
+  background: var(--orange);
+  color: #2a1a08;
+}
+.btn.ghost {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream);
+}
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* 게임 */
+#gameScreen {
+  padding: 0;
+  justify-content: flex-start;
+}
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: 16px 18px;
+  pointer-events: none;
+}
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+#roundLabel {
+  font-weight: 700;
+  color: var(--orange);
+  font-size: 18px;
+}
+#timer {
+  font-weight: 800;
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+#timer.danger {
+  color: #ff5a4d;
+}
+#orderText {
+  margin-top: 4px;
+  color: var(--crust);
+  font-size: 15px;
+}
+
+#game {
+  width: 100%;
+  height: 100dvh;
+  display: block;
+  touch-action: none;
+}
+
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translateX(-50%);
+  background: var(--cream);
+  color: var(--ink);
+  padding: 14px 20px;
+  border-radius: 18px;
+  max-width: 80%;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.bubble.active {
+  opacity: 1;
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 40px;
+  border: 8px solid transparent;
+  border-top-color: var(--cream);
+}
+
+#doneBtn {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: var(--cream);
+  z-index: 6;
+}
+#doneBtn:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
+/* 라운드 점수 팝업 */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 14, 8, 0.55);
+}
+.overlay.active {
+  display: flex;
+}
+.rs-card {
+  background: var(--ink);
+  border: 2px solid var(--orange);
+  border-radius: 20px;
+  padding: 28px 40px;
+  text-align: center;
+  animation: pop 0.18s ease-out;
+}
+@keyframes pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.rs-fair {
+  color: var(--crust);
+  font-size: 16px;
+}
+.rs-fair b {
+  color: var(--cream);
+  font-size: 22px;
+}
+.rs-score {
+  color: var(--orange);
+  font-size: 56px;
+  font-weight: 800;
+  margin: 6px 0;
+}
+.rs-bonus {
+  color: var(--green);
+  font-weight: 700;
+  height: 22px;
+}
+.rs-comment {
+  margin-top: 10px;
+  color: var(--cream);
+  font-size: 15px;
+}
+.rs-hint {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #8a7a66;
+}
+
+/* 결과 */
+h2 {
+  font-size: 40px;
+  color: var(--green);
+}
+.comment {
+  margin: 8px 0 20px;
+  color: var(--crust);
+}
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.total b {
+  font-size: 72px;
+  color: var(--orange);
+}
+.total span {
+  font-size: 18px;
+  color: var(--crust);
+}
+.bars {
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 20px;
+}
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+  font-size: 13px;
+}
+.bar-row span {
+  width: 78px;
+  text-align: left;
+  color: var(--crust);
+}
+.bar-row b {
+  width: 34px;
+  text-align: right;
+}
+.bar {
+  flex: 1;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.bar .fill {
+  height: 100%;
+  background: var(--orange);
+}
+
+.nick-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+}
+#nickInput {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream);
+  font-size: 16px;
+}
+#nickInput::placeholder {
+  color: #8a7a66;
+}
+
+/* 랭킹 */
+.rank-list {
+  width: 100%;
+  max-width: 360px;
+  max-height: 60dvh;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+.rank-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.04);
+}
+.rank-row.me {
+  background: rgba(242, 140, 40, 0.2);
+}
+.rank-row .rk {
+  width: 32px;
+  font-weight: 800;
+  color: var(--orange);
+}
+.rank-row .nm {
+  flex: 1;
+  text-align: left;
+}
+.rank-row b {
+  font-variant-numeric: tabular-nums;
+}
