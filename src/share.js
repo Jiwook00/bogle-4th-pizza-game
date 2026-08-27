@@ -6,6 +6,10 @@
 import { PALETTE, GRADES } from "./config.js";
 import { drawFace } from "./characters.js";
 
+// 로고 프리로드 — 카드 합성 시점에 로드돼 있으면 워터마크로 얹는다.
+const logo = new Image();
+logo.src = "bogle-logo.svg";
+
 function gradeFor(total) {
   return GRADES.find((g) => total >= g.min) || GRADES[GRADES.length - 1];
 }
@@ -82,6 +86,12 @@ export function buildShareCard({ nickname, total, rounds, rank }) {
     ctx.fillText(String(s), bx + bw - 10, y + 27);
     ctx.textAlign = "left";
   });
+
+  // 하단 로고 워터마크 (로드돼 있을 때만)
+  if (logo.complete && logo.naturalWidth) {
+    const ls = 72;
+    ctx.drawImage(logo, W / 2 - ls / 2, H - 190, ls, ls);
+  }
 
   // 하단 매장 문구
   ctx.textAlign = "center";

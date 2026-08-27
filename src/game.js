@@ -223,17 +223,18 @@ export class Game {
     ctx.clearRect(0, 0, this.W, this.H);
     drawBackground(ctx, this.W, this.H);
 
+    const topping = this.round?.topping;
     if (this.state === "round") {
-      drawPieces(ctx, this.pieces, this.center, 0);
-      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2);
+      drawPieces(ctx, this.pieces, this.center, 0, false, topping?.base);
+      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       drawStroke(ctx, this.input.points);
     } else if (this.state === "reveal" || this.state === "scored") {
       const rv = this.reveal;
       let explode = 0;
       if (rv.phase === "spread") explode = rv.t / REVEAL.spread;
       else explode = 1;
-      drawPieces(ctx, this.pieces, this.center, explode, true);
-      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2);
+      drawPieces(ctx, this.pieces, this.center, explode, true, topping?.base);
+      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       const appear = this.reactions.some((r) => r.show)
         ? Math.min(1, rv.phase === "faces" ? rv.t / REVEAL.faces : 1)
         : 0;

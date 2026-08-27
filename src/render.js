@@ -42,12 +42,14 @@ export function drawBackground(ctx, W, H) {
 }
 
 // 피자 조각 그리기. explode 0~1 로 벌어짐.
+// base = 치즈/소스 채움색(메뉴별). 없으면 기본 오렌지.
 export function drawPieces(
   ctx,
   pieces,
   center,
   explode = 0,
   showCrumbColor = false,
+  base = PALETTE.orange,
 ) {
   for (const p of pieces) {
     const ox = p.ox * explode;
@@ -62,7 +64,7 @@ export function drawPieces(
     ctx.closePath();
 
     // 크러스트 테두리 + 치즈 채움
-    ctx.fillStyle = p.isCrumb && showCrumbColor ? "#8a6a3a" : PALETTE.orange;
+    ctx.fillStyle = p.isCrumb && showCrumbColor ? "#8a6a3a" : base;
     ctx.fill();
     ctx.lineWidth = 3;
     ctx.strokeStyle = PALETTE.crust;
@@ -71,20 +73,26 @@ export function drawPieces(
   }
 }
 
-// 토핑 점(장식) — 피자 중앙 기준 고정 위치
-export function drawToppings(ctx, center, r, seed = 1) {
+// 토핑 점(장식) — 피자 중앙 기준 고정 위치.
+// spec.dots = [{ color, r(상대반지름), n(개수) }] 로 메뉴별 토핑을 뿌린다.
+// spec 없으면 기존 단색 점 폴백. 시드 기반이라 라운드마다 위치 고정.
+export function drawToppings(ctx, center, r, seed = 1, spec = null) {
   ctx.save();
   let s = seed * 9301 + 49297;
   const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  ctx.fillStyle = PALETTE.orangeDeep;
-  for (let i = 0; i < 14; i++) {
-    const ang = rnd() * Math.PI * 2;
-    const rad = Math.sqrt(rnd()) * r * 0.82;
-    const x = center.x + Math.cos(ang) * rad;
-    const y = center.y + Math.sin(ang) * rad;
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.05, 0, Math.PI * 2);
-    ctx.fill();
+
+  const dots = spec?.dots ?? [{ color: PALETTE.orangeDeep, r: 0.05, n: 14 }];
+  for (const d of dots) {
+    ctx.fillStyle = d.color;
+    for (let i = 0; i < d.n; i++) {
+      const ang = rnd() * Math.PI * 2;
+      const rad = Math.sqrt(rnd()) * r * 0.82;
+      const x = center.x + Math.cos(ang) * rad;
+      const y = center.y + Math.sin(ang) * rad;
+      ctx.beginPath();
+      ctx.arc(x, y, r * d.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.restore();
 }

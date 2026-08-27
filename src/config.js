@@ -3,10 +3,10 @@
 // 콘텐츠(메뉴/손님 이름)는 전부 여기 모아둠. 실제 이름 들어오면 이 파일만 교체.
 // ============================================================
 
-// 로고 팔레트 (주황/초록 고정)
+// 로고 팔레트 (주황/초록 고정) — orange는 실제 로고 컬러(#E4741D)에 맞춤
 export const PALETTE = {
-  orange: "#F28C28",
-  orangeDeep: "#D9701A",
+  orange: "#E4741D",
+  orangeDeep: "#C85F12",
   crust: "#E8B872",
   green: "#3B7A57",
   greenDeep: "#2A5A40",
@@ -24,49 +24,88 @@ export const GRADES = [
 ];
 
 // 라운드 구성 — order: 주문 조각 수, limit: 제한시간(초, null=무제한)
-// pizza: "오늘은 ○○ 피자입니다" 문구용 (플레이스홀더)
+// pizza: "오늘은 ○○ 입니다" 문구용 (보글하우스 실제 메뉴)
+// topping: 조각 렌더 스타일 — base(채움색) + dots(토핑 마크: 색/상대반지름/개수).
+//          메뉴마다 다른 비주얼을 주는 감도 레버. render.js가 읽는다.
 export const ROUNDS = [
   {
     id: "tutorial",
     order: 2,
     limit: null,
-    pizza: "마르게리타",
+    pizza: "보글 페퍼로니 피자",
     label: "튜토리얼",
+    topping: {
+      base: "#E4741D",
+      dots: [{ color: "#B4331F", r: 0.075, n: 9 }],
+    },
   },
   {
     id: "r1",
     order: 4,
     limit: 14,
-    pizza: "페퍼로니",
+    pizza: "머쉬렐라 피자",
     label: "ROUND 1",
+    topping: {
+      base: "#E8C88A", // 크림/화이트 베이스
+      dots: [
+        { color: "#9C7A4E", r: 0.07, n: 7 }, // 버섯
+        { color: "#FBEFD8", r: 0.05, n: 8 }, // 흰치즈
+      ],
+    },
   },
   {
     id: "r2",
     order: 3,
     limit: 14,
-    pizza: "고르곤졸라",
+    pizza: "치져스 크러스트",
     label: "ROUND 2",
+    topping: {
+      base: "#E6A93C", // 골든 치즈
+      dots: [{ color: "#C98A2A", r: 0.05, n: 6 }], // 치즈 방울 (토핑 적게)
+    },
   },
   {
     id: "r3",
     order: 6,
     limit: 12,
-    pizza: "콰트로 치즈",
+    pizza: "베이컨 초리소 케이준 피자",
     label: "ROUND 3",
+    topping: {
+      base: "#C85F12", // 어둡고 매운 베이스
+      dots: [
+        { color: "#8E2A18", r: 0.04, n: 14 }, // 붉은 향신료 flecks
+        { color: "#6E3B22", r: 0.06, n: 7 }, // 베이컨 조각
+      ],
+    },
   },
   {
     id: "r4",
     order: 5,
     limit: 12,
-    pizza: "트러플 감자",
+    pizza: "비리아 피자",
     label: "ROUND 4",
+    topping: {
+      base: "#B23A1A", // 붉은 콘소메 베이스
+      dots: [
+        { color: "#4F8B3B", r: 0.045, n: 10 }, // 고수
+        { color: "#EBDCC0", r: 0.04, n: 6 }, // 양파
+      ],
+    },
   },
   {
     id: "r5",
     order: 4,
     limit: 10,
-    pizza: "보글 스페셜",
+    pizza: "보글 BMT 피자",
     label: "ROUND 5 · 4th",
+    topping: {
+      base: "#E4741D",
+      dots: [
+        { color: "#B4331F", r: 0.07, n: 7 }, // 페퍼로니
+        { color: "#4F8B3B", r: 0.055, n: 7 }, // 피망
+        { color: "#EBDCC0", r: 0.045, n: 7 }, // 양파
+      ],
+    },
   },
 ];
 
