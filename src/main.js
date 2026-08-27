@@ -157,10 +157,14 @@ function startGame() {
 
 function wireGame(g) {
   g.onRoundStart = (round, idx, isBonus) => {
-    // 주문 말풍선 (하단 상주)
+    // 주문 말풍선 (하단 상주). 코치(튜토리얼) 라운드는 코치 시퀀스가 대신 안내.
     const bubble = $("introBubble");
-    bubble.innerHTML = `<b>${round.order}</b>조각으로 부탁해요!`;
-    bubble.classList.add("active");
+    if (round.coach) {
+      bubble.classList.remove("active");
+    } else {
+      bubble.innerHTML = `<b>${round.order}</b>조각으로 부탁해요!`;
+      bubble.classList.add("active");
+    }
 
     // 보너스(케이크) 라운드 배너 — 일반 라운드는 말풍선만으로 충분
     const punch = $("roundPunch");
@@ -174,6 +178,15 @@ function wireGame(g) {
 
     // 보너스 라운드 배경 연출
     $("gameScreen").classList.toggle("bonus-round", !!isBonus);
+  };
+
+  // 튜토리얼 코치(인트로) — 안내가 끝나면 완성 버튼 노출 + 칼질 입력 오픈.
+  g.onCoachStart = (round) => {
+    $("doneBtn").style.display = "none"; // 안내 중엔 완성 버튼 숨김
+    playBubbleSequence(round.coach, "탭해서 시작 ▸", () => {
+      $("doneBtn").style.display = "block";
+      g.beginCutting(); // 실전 입력 오픈
+    });
   };
 
   g.onTick = (remaining, round) => {
@@ -201,10 +214,61 @@ function wireGame(g) {
 
   g.onRoundScored = (result, round, idx) => {
     $("doneBtn").style.display = "none";
-    showRoundScore(result, round, () => g.advanceFromScore());
+    // 튜토리얼은 점수 카드 대신 코치 말풍선으로 이어서 실전으로 넘김.
+    if (round.coach) {
+      playCoachOutro(result, round, () => g.advanceFromScore());
+    } else {
+      showRoundScore(result, round, () => g.advanceFromScore());
+    }
   };
 
   g.onFinished = (summary) => finish(summary);
+}
+
+// 코치 말풍선 시퀀스 — 딤 오버레이(#coach)를 탭하면 다음 대사로.
+// beats: [{ text, finger? }], lastHint: 마지막 비트의 탭 힌트, onDone: 마지막 탭 후 콜백.
+function playBubbleSequence(beats, lastHint, onDone) {
+  const coach = $("coach");
+  const bubble = $("introBubble");
+  let i = -1;
+
+  const advance = () => {
+    i++;
+    if (i >= beats.length) {
+      coach.classList.remove("active", "show-finger");
+      coach.removeEventListener("click", advance);
+      bubble.classList.remove("active");
+      onDone();
+      return;
+    }
+    sfx.face(); // 넘김 틱
+    const beat = beats[i];
+    const last = i === beats.length - 1;
+    bubble.innerHTML = `${beat.text}<span class="tap-hint">${
+      last ? lastHint : "탭해서 계속 ▸"
+    }</span>`;
+    bubble.classList.add("active");
+    coach.classList.toggle("show-finger", !!beat.finger);
+  };
+
+  coach.classList.add("active");
+  coach.addEventListener("click", advance);
+  advance();
+}
+
+// 연습 종료 코치 — 결과(n/공평도)로 첫 대사를 고르고, 공통 마무리 뒤 실전으로.
+function playCoachOutro(result, round, next) {
+  const o = round.coachOutro;
+  let first;
+  if (result.n < round.order) first = o.short;
+  else if (result.n > round.order) first = o.over;
+  else if (result.fairness < round.unevenThreshold) first = o.uneven;
+  else first = o.good;
+  playBubbleSequence(
+    [{ text: first }, { text: o.end }],
+    "탭해서 실전으로 ▸",
+    next,
+  );
 }
 
 // 라운드 점수 팝업 (탭하면 다음)

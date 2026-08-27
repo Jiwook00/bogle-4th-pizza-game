@@ -47,6 +47,7 @@ export class Game {
     this.onRoundEnd = null; // () => void  — 리빌 시작(완성/시간초과)
     this.onRoundScored = null; // (result, roundInfo) => void
     this.onFinished = null; // ({ total, rounds }) => void
+    this.onCoachStart = null; // (round) => void — 튜토리얼 안내 시퀀스 시작(입력은 잠금 유지)
 
     this._setupCanvas();
     document.addEventListener("visibilitychange", () => {
@@ -179,6 +180,11 @@ export class Game {
     if (this.onFinished) this.onFinished({ total, rounds, results: scored });
   }
 
+  // 코치(튜토리얼) 안내가 끝나면 main.js가 호출 — 칼질 입력을 연다.
+  beginCutting() {
+    if (this.state === "round") this.input.enabled = true;
+  }
+
   // 리빌 진행 후 다음 라운드로 (main.js에서 탭으로 호출)
   advanceFromScore() {
     if (this.state !== "scored") return;
@@ -202,7 +208,13 @@ export class Game {
       this.intro.t += dt;
       if (this.intro.t >= this.intro.dur) {
         this.state = "round";
-        this.input.enabled = true;
+        // 코치(튜토리얼) 라운드는 안내가 끝난 뒤 beginCutting()으로 입력을 연다.
+        if (this.round.coach) {
+          this.input.enabled = false;
+          if (this.onCoachStart) this.onCoachStart(this.round);
+        } else {
+          this.input.enabled = true;
+        }
       }
     } else if (this.state === "round") {
       if (this.round.limit != null) {

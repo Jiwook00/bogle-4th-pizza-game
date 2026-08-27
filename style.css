@@ -327,6 +327,90 @@ h1 span {
   border-top-color: var(--cream);
 }
 
+/* 튜토리얼 코치 오버레이 — 화면을 살짝 딤하고 탭을 받아 다음 대사로 넘김 */
+.coach {
+  position: absolute;
+  inset: 0;
+  z-index: 5; /* 캔버스 위, 말풍선(#introBubble z6) 아래 → 대사는 딤 위로 읽힘 */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.28);
+  transition: opacity 0.25s;
+}
+.coach.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto; /* 아무 데나 탭하면 다음 대사 */
+}
+/* 고스트 손가락 + 직선 점선 궤적은 finger 비트에서만 노출 */
+.coach-line,
+.coach-finger {
+  display: none;
+}
+.coach.show-finger .coach-line,
+.coach.show-finger .coach-finger {
+  display: block;
+}
+/* 피자 중심(캔버스 40%)을 가로지르는 직선 점선 */
+.coach-line {
+  position: absolute;
+  top: 40%;
+  left: 18%;
+  width: 64%;
+  height: 0;
+  transform: translateY(-50%);
+  border-top: 3px dashed rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  animation: coach-line 1.8s ease-in-out infinite;
+}
+.coach-finger {
+  position: absolute;
+  top: 40%;
+  left: 18%;
+  margin: -6px 0 0 -12px; /* 손끝을 궤적선에 얹음 */
+  font-size: 38px;
+  line-height: 1;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+  animation: coach-swipe 1.8s ease-in-out infinite;
+}
+@keyframes coach-line {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30%,
+  80% {
+    opacity: 0.9;
+  }
+}
+@keyframes coach-swipe {
+  0% {
+    left: 18%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    left: 82%;
+    opacity: 1;
+  }
+  100% {
+    left: 82%;
+    opacity: 0;
+  }
+}
+/* 말풍선 안 "탭해서 계속" 힌트 */
+.tap-hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange-deep);
+  opacity: 0.85;
+}
+
 /* 라운드 시작 — 피자 중앙에서 숫자가 다가오며(커지며) 사라짐 */
 #roundPunch {
   position: absolute;
