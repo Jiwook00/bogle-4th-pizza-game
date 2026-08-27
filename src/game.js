@@ -24,6 +24,7 @@ import {
   drawToppings,
   drawStroke,
   drawReactions,
+  getImage,
 } from "./render.js";
 
 const REVEAL = { spread: 0.4, hold: 0.3, faces: 0.25 }; // 초
@@ -66,6 +67,8 @@ export class Game {
   }
 
   start() {
+    // 라운드 이미지 미리 로드(첫 라운드 벡터 깜빡임 방지)
+    ROUNDS.forEach((r) => getImage(r.image));
     this.results = [];
     this.roundIdx = -1;
     this._nextRound();
@@ -224,17 +227,27 @@ export class Game {
     drawBackground(ctx, this.W, this.H);
 
     const topping = this.round?.topping;
+    // 라운드별 피자/케이크 이미지. 이미지 쓰면 벡터 토핑은 생략.
+    const pizzaImg = getImage(this.round?.image);
+    const useImg = pizzaImg && pizzaImg.complete && pizzaImg.naturalWidth;
+    const pieceOpts = {
+      base: topping?.base,
+      image: pizzaImg,
+      radius: this.radius,
+    };
     if (this.state === "round") {
-      drawPieces(ctx, this.pieces, this.center, 0, false, topping?.base);
-      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
+      drawPieces(ctx, this.pieces, this.center, 0, false, pieceOpts);
+      if (!useImg)
+        drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       drawStroke(ctx, this.input.points);
     } else if (this.state === "reveal" || this.state === "scored") {
       const rv = this.reveal;
       let explode = 0;
       if (rv.phase === "spread") explode = rv.t / REVEAL.spread;
       else explode = 1;
-      drawPieces(ctx, this.pieces, this.center, explode, true, topping?.base);
-      drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
+      drawPieces(ctx, this.pieces, this.center, explode, true, pieceOpts);
+      if (!useImg)
+        drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       const appear = this.reactions.some((r) => r.show)
         ? Math.min(1, rv.phase === "faces" ? rv.t / REVEAL.faces : 1)
         : 0;

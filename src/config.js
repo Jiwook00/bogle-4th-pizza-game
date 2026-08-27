@@ -34,6 +34,7 @@ export const ROUNDS = [
     limit: null,
     pizza: "보글 페퍼로니 피자",
     label: "튜토리얼",
+    image: "assets/pizza2/페퍼로니피자.png",
     topping: {
       base: "#E4741D",
       dots: [{ color: "#B4331F", r: 0.075, n: 9 }],
@@ -45,6 +46,7 @@ export const ROUNDS = [
     limit: 14,
     pizza: "머쉬렐라 피자",
     label: "ROUND 1",
+    image: "assets/pizza2/머쉬렐라피자.png",
     topping: {
       base: "#E8C88A", // 크림/화이트 베이스
       dots: [
@@ -59,6 +61,7 @@ export const ROUNDS = [
     limit: 14,
     pizza: "치져스 크러스트",
     label: "ROUND 2",
+    image: "assets/pizza2/치져스크러스트.png",
     topping: {
       base: "#E6A93C", // 골든 치즈
       dots: [{ color: "#C98A2A", r: 0.05, n: 6 }], // 치즈 방울 (토핑 적게)
@@ -70,6 +73,7 @@ export const ROUNDS = [
     limit: 12,
     pizza: "베이컨 초리소 케이준 피자",
     label: "ROUND 3",
+    image: "assets/pizza2/베이컨초리소케이준피자.png",
     topping: {
       base: "#C85F12", // 어둡고 매운 베이스
       dots: [
@@ -84,6 +88,7 @@ export const ROUNDS = [
     limit: 12,
     pizza: "비리아 피자",
     label: "ROUND 4",
+    image: "assets/pizza2/비리아피자.png",
     topping: {
       base: "#B23A1A", // 붉은 콘소메 베이스
       dots: [
@@ -96,14 +101,14 @@ export const ROUNDS = [
     id: "r5",
     order: 4,
     limit: 10,
-    pizza: "보글 BMT 피자",
+    pizza: "보글 4주년 기념 케이크 🎉",
     label: "ROUND 5 · 4th",
+    image: "assets/pizza2/보글4기념케이크.png",
     topping: {
-      base: "#E4741D",
+      base: "#FBEFD8", // 케이크 크림 베이스 (이미지 로드 전 폴백)
       dots: [
-        { color: "#B4331F", r: 0.07, n: 7 }, // 페퍼로니
-        { color: "#4F8B3B", r: 0.055, n: 7 }, // 피망
-        { color: "#EBDCC0", r: 0.045, n: 7 }, // 양파
+        { color: "#E4741D", r: 0.06, n: 8 },
+        { color: "#B4331F", r: 0.04, n: 6 },
       ],
     },
   },
