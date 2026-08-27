@@ -50,10 +50,19 @@ const INTRO = [
   { spk: "B", both: true, text: "누구 하나 억울하게 작은 조각 받으면… 알지?" },
 ];
 
+// 앞 바 테이블이 사선이라, 사장님 서 있는 높이를 자기 x위치의 테라조 선에 맞춤.
+// (왼쪽=선이 높음→살짝 위 / 오른쪽=선이 낮음→살짝 아래) 상반신 끝단이 테이블 뒤로 살짝 들어감.
+function bossBottom(leftPct) {
+  return 40.6 - 0.03 * (leftPct - 50); // %
+}
+
 function placeBoss(el, { left, shown, active }) {
   el.style.left = left;
+  // boss-a 이미지는 머리 위 여백이 적어 더 높이 서므로 내려서 boss-b와 키를 맞춤
+  const headFix = el.id === "bossA" ? 4.3 : 0; // %
+  el.style.bottom = bossBottom(parseFloat(left)) - headFix + "%";
   el.style.opacity = shown ? "1" : "0";
-  const y = shown ? (active ? "0" : "4%") : "120%";
+  const y = shown ? "0" : "120%";
   const scale = active ? 1 : shown ? 0.96 : 1;
   el.style.transform = `translate(-50%, ${y}) scale(${scale})`;
   el.style.filter = shown && !active ? "brightness(0.6)" : "none";

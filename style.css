@@ -125,55 +125,19 @@ h1 span {
   position: absolute;
   inset: 0;
 }
-/* 바 뒤 벽 (임시 placeholder) */
+/* 바 뒤 벽 — 선반 바틀 + 맥주탭 + 테라조까지 한 장면 (화면 꽉 채움) */
 .bar-wall {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    radial-gradient(
-      120% 60% at 50% 12%,
-      rgba(228, 116, 29, 0.16),
-      transparent 60%
-    ),
-    linear-gradient(to bottom, #2a1e14 0%, #201811 55%, var(--bg) 100%);
-}
-/* 맥주 탭 실루엣 한 줄 (임시 placeholder) */
-.beer-taps {
-  position: absolute;
-  top: 9%;
-  left: 0;
-  right: 0;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  gap: 26px;
-  pointer-events: none;
-}
-.beer-taps i {
-  position: relative;
-  width: 10px;
-  height: 46px;
-  background: rgba(0, 0, 0, 0.38);
-  border-radius: 3px;
-}
-.beer-taps i::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  width: 22px;
-  height: 22px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.38);
+  background: #faf6ee url("assets/intro-scene-bg.png") center / cover no-repeat;
 }
 .boss {
   position: absolute;
-  bottom: 38%; /* 카운터 top 라인에 딱 서서 이미지 전체가 위로 보이게 (하단 안 가림) */
+  bottom: 41%; /* JS가 위치별 사선 높이로 덮어씀 (bossBottom) */
   left: 50%;
-  width: 56%;
-  max-width: 300px;
+  width: 62%;
+  max-width: 290px;
   height: auto;
   z-index: 2;
   opacity: 0;
@@ -186,21 +150,18 @@ h1 span {
   will-change: transform, left, opacity;
   pointer-events: none;
 }
-/* 바 카운터 (전경 — 사장님 하반신을 가림, 임시 placeholder) */
+/* 바 카운터 (전경 — 테라조 상판만 투명 레이어, 사장님 하반신을 가림)
+   .bar-wall과 동일한 프레임 크기 + center/cover 라 테라조가 항상 정확히 겹침 */
 .bar-counter {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 38%;
+  inset: 0;
   z-index: 3;
-  background: linear-gradient(to bottom, #3a2a1c 0%, #2a1e14 45%, #241a12 100%);
-  border-top: 2px solid rgba(246, 217, 138, 0.25);
+  background: center / cover no-repeat url("assets/intro-scene-front.png");
   pointer-events: none;
 }
 .intro-bubble {
   position: absolute;
-  bottom: 10%;
+  bottom: 44%;
   left: 50%;
   z-index: 4;
   transform: translateX(-50%) translateY(6px);
