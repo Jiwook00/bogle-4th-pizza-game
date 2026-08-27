@@ -159,60 +159,53 @@ h1 span {
   background: center / cover no-repeat url("assets/intro-scene-front.png");
   pointer-events: none;
 }
-.intro-bubble {
+/* 하단 게임 대사 박스 (화면 하단 가로 고정) */
+.intro-box {
   position: absolute;
-  bottom: 44%;
-  left: 50%;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  margin: 0 auto;
+  max-width: 420px;
   z-index: 4;
-  transform: translateX(-50%) translateY(6px);
   background: var(--cream);
   color: var(--ink);
-  padding: 14px 20px;
-  border-radius: 18px;
-  max-width: min(78%, 320px);
-  width: max-content;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.45;
-  text-align: center;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  padding: 16px 20px 30px;
+  box-shadow: 0 6px 0 rgba(58, 42, 26, 0.18);
   opacity: 0;
+  transform: translateY(12px);
   transition:
     opacity 0.25s ease,
-    transform 0.25s ease,
-    left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.25s ease;
   pointer-events: none;
 }
-.intro-bubble.active {
+.intro-box.active {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
-/* 꼬리는 위쪽(말하는 사장님)을 향함 */
-.intro-bubble::after {
-  content: "";
+.intro-box-text {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: left;
+  min-height: 1.5em;
+  white-space: pre-wrap;
+}
+.intro-cont {
   position: absolute;
-  top: -9px;
-  border: 9px solid transparent;
-  border-bottom-color: var(--cream);
-}
-.intro-bubble.tail-center::after {
-  left: 50%;
-  margin-left: -9px;
-}
-.intro-bubble.tail-left::after {
-  left: 24px;
-}
-.intro-bubble.tail-right::after {
-  right: 24px;
-}
-.intro-tap {
-  position: absolute;
-  top: 16px;
-  right: 18px;
-  z-index: 5;
-  color: #8a7a66;
+  right: 16px;
+  bottom: 8px;
   font-size: 13px;
+  color: #8a7a66;
   pointer-events: none;
   animation: tapPulse 1.2s ease-in-out infinite;
+  transition: opacity 0.15s ease;
+}
+.intro-box.typing .intro-cont {
+  opacity: 0;
 }
 @keyframes tapPulse {
   0%,

@@ -74,8 +74,39 @@ function playIntro() {
   const stage = $("introScreen");
   const bossA = $("bossA");
   const bossB = $("bossB");
-  const bubble = $("introLine");
+  const box = $("introLine");
+  const textEl = $("introText");
   let i = -1;
+  let typing = false;
+  let timer = null;
+  let fullText = "";
+
+  // 타자기: 이모지(서로게이트 쌍)가 깨지지 않도록 코드포인트 단위로 채움
+  function typeText(str) {
+    clearInterval(timer);
+    fullText = str;
+    const chars = Array.from(str);
+    let n = 0;
+    textEl.textContent = "";
+    typing = true;
+    box.classList.add("typing");
+    timer = setInterval(() => {
+      n++;
+      textEl.textContent = chars.slice(0, n).join("");
+      if (n >= chars.length) {
+        clearInterval(timer);
+        typing = false;
+        box.classList.remove("typing");
+      }
+    }, 28);
+  }
+
+  function finishTyping() {
+    clearInterval(timer);
+    textEl.textContent = fullText;
+    typing = false;
+    box.classList.remove("typing");
+  }
 
   function render(beat) {
     const aActive = beat.spk === "A";
@@ -86,31 +117,34 @@ function playIntro() {
       placeBoss(bossA, { left: "30%", shown: true, active: aActive });
       placeBoss(bossB, { left: "70%", shown: true, active: !aActive });
     }
-    // 말풍선: 카운터 위 가운데 고정(모바일 잘림 방지), 꼬리만 말하는 사장님 쪽으로
-    const side = !beat.both ? "center" : aActive ? "left" : "right";
-    bubble.style.left = "50%";
-    bubble.className = "intro-bubble tail-" + side; // active 리셋
-    bubble.textContent = beat.text;
-    // 재생 애니(툭 나타남)
-    void bubble.offsetWidth;
-    bubble.classList.add("active");
+    box.classList.add("active");
+    typeText(beat.text);
     sfx.face && sfx.face();
   }
 
   function next() {
     i++;
     if (i >= INTRO.length) {
-      stage.removeEventListener("click", next);
+      stage.removeEventListener("click", advance);
       startGame();
       return;
     }
     render(INTRO[i]);
   }
 
+  // 탭: 타이핑 중이면 즉시 전체 표시(스킵), 끝났으면 다음 대사로 진행
+  function advance() {
+    if (typing) {
+      finishTyping();
+      return;
+    }
+    next();
+  }
+
   // 초기 숨김 상태 — 한 프레임 그린 뒤 첫 등장(슥) 애니가 살도록 rAF로 진행
   placeBoss(bossA, { left: "50%", shown: false, active: false });
   placeBoss(bossB, { left: "82%", shown: false, active: false });
-  stage.addEventListener("click", next);
+  stage.addEventListener("click", advance);
   requestAnimationFrame(next);
 }
 
