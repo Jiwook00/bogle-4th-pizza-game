@@ -217,9 +217,15 @@ h1 span {
   inset: 0;
   z-index: 10;
   display: none;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  background: rgba(20, 14, 8, 0.55);
+  /* 위쪽(피자/표정)은 비우고 아래쪽만 딤 처리 */
+  background: linear-gradient(
+    to top,
+    rgba(20, 14, 8, 0.9) 0%,
+    rgba(20, 14, 8, 0.85) 32%,
+    rgba(20, 14, 8, 0) 58%
+  );
 }
 .overlay.active {
   display: flex;
@@ -228,9 +234,30 @@ h1 span {
   background: var(--ink);
   border: 2px solid var(--orange);
   border-radius: 20px;
-  padding: 28px 40px;
-  text-align: center;
+  padding: 18px 24px;
+  margin: 0 16px 40px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  /* 가로로 넓은 카드: [공평도/점수 | 보너스/코멘트], 힌트는 하단 전폭 */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 20px;
+  row-gap: 8px;
+  text-align: left;
   animation: pop 0.18s ease-out;
+}
+.rs-main {
+  text-align: center;
+  padding-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+.rs-side {
+  min-width: 0;
+}
+.rs-hint {
+  grid-column: 1 / -1;
+  text-align: center;
 }
 @keyframes pop {
   from {
