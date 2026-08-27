@@ -7,7 +7,7 @@
 import { Game } from "./game.js";
 import { ROUNDS, GRADES } from "./config.js";
 import { faceFor } from "./scoring.js";
-import { unlock } from "./audio.js";
+import { unlock, sfx } from "./audio.js";
 import { submit, board, cleanNickname } from "./ranking.js";
 import { buildShareCard, downloadCard } from "./share.js";
 
@@ -30,21 +30,86 @@ function gradeFor(total) {
 // ---- 시작 ----
 $("startBtn").addEventListener("click", () => {
   unlock(); // iOS 오디오 언락 (사용자 탭 시점)
-  startGame();
+  playIntro();
 });
+
+// ---- 인트로 컷신 (사장님 둘, 탭으로 진행) ----
+// spk: 말하는 사람, both: 둘 다 화면에 (false면 A만 중앙)
+const INTRO = [
+  {
+    spk: "A",
+    both: false,
+    text: "왔구나 일일 알바! 오늘 우리 보글하우스… 4주년이다 🎉",
+  },
+  { spk: "B", both: true, text: "인사는 됐고. 오늘 주방, 네가 맡는다." },
+  {
+    spk: "A",
+    both: true,
+    text: "손님이 원하는 조각 수대로, 최대~한 공평하게 나눠줘!",
+  },
+  { spk: "B", both: true, text: "누구 하나 억울하게 작은 조각 받으면… 알지?" },
+];
+
+function placeBoss(el, { left, shown, active }) {
+  el.style.left = left;
+  el.style.opacity = shown ? "1" : "0";
+  const y = shown ? (active ? "0" : "4%") : "120%";
+  const scale = active ? 1 : shown ? 0.96 : 1;
+  el.style.transform = `translate(-50%, ${y}) scale(${scale})`;
+  el.style.filter = shown && !active ? "brightness(0.6)" : "none";
+  el.style.zIndex = active ? 2 : 1;
+}
+
+function playIntro() {
+  show("introScreen");
+  const stage = $("introScreen");
+  const bossA = $("bossA");
+  const bossB = $("bossB");
+  const bubble = $("introLine");
+  let i = -1;
+
+  function render(beat) {
+    const aActive = beat.spk === "A";
+    if (!beat.both) {
+      placeBoss(bossA, { left: "50%", shown: true, active: true });
+      placeBoss(bossB, { left: "82%", shown: false, active: false });
+    } else {
+      placeBoss(bossA, { left: "30%", shown: true, active: aActive });
+      placeBoss(bossB, { left: "70%", shown: true, active: !aActive });
+    }
+    // 말풍선: 카운터 위 가운데 고정(모바일 잘림 방지), 꼬리만 말하는 사장님 쪽으로
+    const side = !beat.both ? "center" : aActive ? "left" : "right";
+    bubble.style.left = "50%";
+    bubble.className = "intro-bubble tail-" + side; // active 리셋
+    bubble.textContent = beat.text;
+    // 재생 애니(툭 나타남)
+    void bubble.offsetWidth;
+    bubble.classList.add("active");
+    sfx.face && sfx.face();
+  }
+
+  function next() {
+    i++;
+    if (i >= INTRO.length) {
+      stage.removeEventListener("click", next);
+      startGame();
+      return;
+    }
+    render(INTRO[i]);
+  }
+
+  // 초기 숨김 상태 — 한 프레임 그린 뒤 첫 등장(슥) 애니가 살도록 rAF로 진행
+  placeBoss(bossA, { left: "50%", shown: false, active: false });
+  placeBoss(bossB, { left: "82%", shown: false, active: false });
+  stage.addEventListener("click", next);
+  requestAnimationFrame(next);
+}
 
 function startGame() {
   show("gameScreen");
   game = new Game(canvas);
   wireGame(game);
-  // 3초 마스코트 인트로
-  const bubble = $("introBubble");
-  bubble.textContent = "주방 알바 왔구나? 손님이 말한 개수대로, 공평하게 잘라!";
-  bubble.classList.add("active");
-  setTimeout(() => {
-    bubble.classList.remove("active");
-    game.start();
-  }, 2600);
+  game.start();
 }
 
 function wireGame(g) {

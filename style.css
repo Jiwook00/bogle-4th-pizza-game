@@ -114,6 +114,154 @@ h1 span {
   background: var(--orange);
   color: #2a1a08;
 }
+
+/* 인트로 컷신 */
+#introScreen {
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+.intro-stage {
+  position: absolute;
+  inset: 0;
+}
+/* 바 뒤 벽 (임시 placeholder) */
+.bar-wall {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      120% 60% at 50% 12%,
+      rgba(228, 116, 29, 0.16),
+      transparent 60%
+    ),
+    linear-gradient(to bottom, #2a1e14 0%, #201811 55%, var(--bg) 100%);
+}
+/* 맥주 탭 실루엣 한 줄 (임시 placeholder) */
+.beer-taps {
+  position: absolute;
+  top: 9%;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  pointer-events: none;
+}
+.beer-taps i {
+  position: relative;
+  width: 10px;
+  height: 46px;
+  background: rgba(0, 0, 0, 0.38);
+  border-radius: 3px;
+}
+.beer-taps i::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.38);
+}
+.boss {
+  position: absolute;
+  bottom: 38%; /* 카운터 top 라인에 딱 서서 이미지 전체가 위로 보이게 (하단 안 가림) */
+  left: 50%;
+  width: 56%;
+  max-width: 300px;
+  height: auto;
+  z-index: 2;
+  opacity: 0;
+  transform: translate(-50%, 120%);
+  transition:
+    left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.35s ease,
+    filter 0.3s ease;
+  will-change: transform, left, opacity;
+  pointer-events: none;
+}
+/* 바 카운터 (전경 — 사장님 하반신을 가림, 임시 placeholder) */
+.bar-counter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 38%;
+  z-index: 3;
+  background: linear-gradient(to bottom, #3a2a1c 0%, #2a1e14 45%, #241a12 100%);
+  border-top: 2px solid rgba(246, 217, 138, 0.25);
+  pointer-events: none;
+}
+.intro-bubble {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%) translateY(6px);
+  background: var(--cream);
+  color: var(--ink);
+  padding: 14px 20px;
+  border-radius: 18px;
+  max-width: min(78%, 320px);
+  width: max-content;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  opacity: 0;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.intro-bubble.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+/* 꼬리는 위쪽(말하는 사장님)을 향함 */
+.intro-bubble::after {
+  content: "";
+  position: absolute;
+  top: -9px;
+  border: 9px solid transparent;
+  border-bottom-color: var(--cream);
+}
+.intro-bubble.tail-center::after {
+  left: 50%;
+  margin-left: -9px;
+}
+.intro-bubble.tail-left::after {
+  left: 24px;
+}
+.intro-bubble.tail-right::after {
+  right: 24px;
+}
+.intro-tap {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  z-index: 5;
+  color: #8a7a66;
+  font-size: 13px;
+  pointer-events: none;
+  animation: tapPulse 1.2s ease-in-out infinite;
+}
+@keyframes tapPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
 .btn.ghost {
   background: rgba(255, 255, 255, 0.1);
   color: var(--cream);
