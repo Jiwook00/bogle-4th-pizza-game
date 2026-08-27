@@ -3,7 +3,7 @@
 주방 알바가 되어 손님이 주문한 개수만큼 피자를 최대한 공평하게 잘라내는 5라운드 아케이드 게임.
 바닐라 JS + Canvas, 빌드 없음.
 
-레포: https://github.com/Jiwook00/bogle-4th-pizza-game
+레포: [https://github.com/Jiwook00/bogle-4th-pizza-game](https://github.com/Jiwook00/bogle-4th-pizza-game)
 
 ## 실행
 
@@ -14,7 +14,7 @@ python3 -m http.server 8777
 # → http://localhost:8777
 ```
 
-모바일 실기 테스트는 같은 와이파이에서 `http://<맥-IP>:8777`.
+모바일 실기 테스트는 같은 와이파이에서 `http://<맥-IP>:8777`
 
 ## 배포
 
