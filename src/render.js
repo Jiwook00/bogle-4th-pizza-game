@@ -93,14 +93,6 @@ export function drawBackground(ctx, W, H) {
     ctx.fill();
   }
 
-  // 우측 하이볼 잔 실루엣
-  ctx.fillStyle = "rgba(246,217,138,0.10)";
-  const gx = W * 0.86,
-    gy = H * 0.08;
-  ctx.fillRect(gx, gy, 46, 92);
-  ctx.fillStyle = "rgba(246,217,138,0.18)";
-  ctx.fillRect(gx, gy + 40, 46, 52); // 음료 채움
-
   // 카운터 상판
   ctx.fillStyle = "rgba(0,0,0,0.25)";
   ctx.fillRect(-10, H * 0.72, W + 20, H);
