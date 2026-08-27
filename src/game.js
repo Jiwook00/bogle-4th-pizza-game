@@ -36,12 +36,13 @@ export class Game {
     this.input = new InputTracker(canvas);
     this.input.onCut = (a, b) => this._tryCut(a, b);
 
-    this.state = "idle"; // idle | round | reveal | done
+    this.state = "idle"; // idle | intro | round | reveal | scored | done
     this.roundIdx = -1;
     this.results = []; // 라운드별 결과
     this.paused = false;
 
     // 콜백 (main.js가 채움)
+    this.onRoundStart = null; // (round, idx, isBonus) => void  — intro 연출(쿵/말풍선)
     this.onTick = null; // (remaining, roundInfo) => void
     this.onRoundEnd = null; // () => void  — 리빌 시작(완성/시간초과)
     this.onRoundScored = null; // (result, roundInfo) => void
@@ -88,10 +89,13 @@ export class Game {
     ];
     this.cuts = 0;
     this.remaining = r.limit ?? Infinity;
-    this.state = "round";
     this.reveal = null;
-    this.input.enabled = true;
+    // intro: 주문 "쿵" 연출 동안 타이머 정지·입력 차단(공정). 끝나면 round로.
+    this.intro = { t: 0, dur: r.bonus ? 1.6 : 0.9 };
+    this.state = "intro";
+    this.input.enabled = false;
     sfx.bottle(); // 병뚜껑 따는 소리 = 라운드 시작
+    if (this.onRoundStart) this.onRoundStart(r, this.roundIdx, !!r.bonus);
     if (this.onTick) this.onTick(this.remaining, r);
   }
 
@@ -121,6 +125,12 @@ export class Game {
       cuts: this.cuts,
     });
     // 무제한(튜토리얼)은 시간계수 1
+    // 보너스 라운드(케이크): 최종 점수 ×배율
+    if (this.round.bonus) {
+      result.mult = this.round.bonus;
+      result.baseScore = result.score;
+      result.score = Math.round(result.score * this.round.bonus);
+    }
     this.results[this.roundIdx] = result;
     this._buildReveal(result);
   }
@@ -160,11 +170,13 @@ export class Game {
 
   _finish() {
     this.state = "done";
-    const rounds = this.results.map((r) => r.score);
+    // 튜토리얼(limit=null)은 점수 미반영 — 채점 라운드만 합산.
+    // rounds와 total이 일치해야 ranking.validate() 통과.
+    const scored = this.results.filter((_, i) => ROUNDS[i].limit != null);
+    const rounds = scored.map((r) => r.score);
     const total = rounds.reduce((s, v) => s + v, 0);
     sfx.win();
-    if (this.onFinished)
-      this.onFinished({ total, rounds, results: this.results });
+    if (this.onFinished) this.onFinished({ total, rounds, results: scored });
   }
 
   // 리빌 진행 후 다음 라운드로 (main.js에서 탭으로 호출)
@@ -186,7 +198,13 @@ export class Game {
   }
 
   _update(dt) {
-    if (this.state === "round") {
+    if (this.state === "intro") {
+      this.intro.t += dt;
+      if (this.intro.t >= this.intro.dur) {
+        this.state = "round";
+        this.input.enabled = true;
+      }
+    } else if (this.state === "round") {
       if (this.round.limit != null) {
         this.remaining -= dt;
         if (this.onTick) this.onTick(Math.max(0, this.remaining), this.round);
@@ -235,11 +253,11 @@ export class Game {
       image: pizzaImg,
       radius: this.radius,
     };
-    if (this.state === "round") {
+    if (this.state === "intro" || this.state === "round") {
       drawPieces(ctx, this.pieces, this.center, 0, false, pieceOpts);
       if (!useImg)
         drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
-      drawStroke(ctx, this.input.points);
+      if (this.state === "round") drawStroke(ctx, this.input.points);
     } else if (this.state === "reveal" || this.state === "scored") {
       const rv = this.reveal;
       let explode = 0;

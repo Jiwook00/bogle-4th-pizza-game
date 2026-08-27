@@ -16,10 +16,10 @@ export const PALETTE = {
   highball: "#F6D98A",
 };
 
-// 등급 (리듬천국 3단계)
+// 등급 (리듬천국 3단계) — MAX_SCORE 633 기준 (완벽 ~80% / 그럭저럭 ~52%)
 export const GRADES = [
-  { min: 460, label: "완벽해요", comment: "주방 물려줄게. 내일부터 나와." },
-  { min: 300, label: "그럭저럭", comment: "뭐, 손님들이 크게 안 싸웠으니까." },
+  { min: 505, label: "완벽해요", comment: "주방 물려줄게. 내일부터 나와." },
+  { min: 330, label: "그럭저럭", comment: "뭐, 손님들이 크게 안 싸웠으니까." },
   { min: 0, label: "다시 한 번", comment: "이건 피자가 아니라 사고 현장인데." },
 ];
 
@@ -101,6 +101,7 @@ export const ROUNDS = [
     id: "r5",
     order: 4,
     limit: 10,
+    bonus: 1.5, // 마지막 케이크 = 보너스 라운드. 최종 점수 ×1.5
     pizza: "보글 4주년 기념 케이크 🎉",
     label: "ROUND 5 · 4th",
     image: "assets/pizza2/보글4기념케이크.png",
@@ -137,4 +138,5 @@ export const SCORE = {
 // 타깃 조각 수 → 이론상 최소 칼질(직선 현) 수 (lazy caterer)
 export const MIN_CUTS = { 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 3, 8: 4 };
 
-export const MAX_SCORE = 575;
+// 채점 라운드 5개(튜토리얼 제외): r1~r4 각 115 + 케이크 round(115×1.5)=173
+export const MAX_SCORE = 633;

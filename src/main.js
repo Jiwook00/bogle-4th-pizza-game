@@ -156,20 +156,47 @@ function startGame() {
 }
 
 function wireGame(g) {
+  g.onRoundStart = (round, idx, isBonus) => {
+    // 주문 말풍선 (하단 상주)
+    const bubble = $("introBubble");
+    bubble.innerHTML = `<b>${round.order}</b>조각으로 부탁해요!`;
+    bubble.classList.add("active");
+
+    // 보너스(케이크) 라운드 배너 — 일반 라운드는 말풍선만으로 충분
+    const punch = $("roundPunch");
+    punch.innerHTML = isBonus
+      ? `<div class="rp-banner">🎂 마지막 주문 · 보너스 라운드!</div>`
+      : "";
+    punch.classList.toggle("bonus", !!isBonus);
+    punch.classList.remove("show");
+    void punch.offsetWidth; // 리플로우 강제 → 애니 재시작
+    punch.classList.add("show");
+
+    // 보너스 라운드 배경 연출
+    $("gameScreen").classList.toggle("bonus-round", !!isBonus);
+  };
+
   g.onTick = (remaining, round) => {
     $("roundLabel").textContent = round.label;
-    $("orderText").textContent = `주문: ${round.order}조각 · ${round.pizza}`;
-    const t = round.limit == null ? "연습" : remaining.toFixed(1);
-    $("timer").textContent = t;
-    $("timer").classList.toggle(
-      "danger",
-      round.limit != null && remaining <= 4,
-    );
+    $("orderText").textContent = round.pizza;
+    const timer = $("timer");
+    if (round.limit == null) {
+      timer.textContent = "연습";
+      timer.className = ""; // 튜토리얼은 중립색
+    } else {
+      timer.textContent = remaining.toFixed(1);
+      const ratio = remaining / round.limit;
+      timer.classList.toggle("warn", ratio <= 0.5 && ratio > 0.25);
+      timer.classList.toggle("danger", ratio <= 0.25);
+      timer.classList.toggle("pulse", remaining <= 3);
+    }
     $("doneBtn").style.display = "block";
   };
 
   g.onRoundEnd = () => {
     $("doneBtn").style.display = "none";
+    $("introBubble").classList.remove("active");
+    $("timer").classList.remove("pulse");
   };
 
   g.onRoundScored = (result, round, idx) => {
@@ -193,8 +220,13 @@ function showRoundScore(result, round, next) {
   }[worstExpr];
 
   $("rsFair").textContent = `${result.fairness}%`;
-  $("rsBonus").textContent = result.bonus ? `+${result.bonus} 최소칼질!` : "";
-  $("rsScore").textContent = `+${result.score}`;
+  // 보너스 줄: 케이크 배율(×1.5)과 최소칼질(+15)을 함께 표기
+  const bonusBits = [];
+  if (result.mult) bonusBits.push(`🎂 ×${result.mult} 보너스!`);
+  if (result.bonus) bonusBits.push(`+${result.bonus} 최소칼질!`);
+  $("rsBonus").textContent = bonusBits.join("  ");
+  // 튜토리얼은 점수 미반영 (오른쪽 코멘트는 기존과 동일하게 표정/상태 코멘트)
+  $("rsScore").textContent = round.limit == null ? "연습" : `+${result.score}`;
   $("rsComment").textContent = statusComment(result.status) || comment;
   pop.classList.add("active");
 
@@ -224,14 +256,17 @@ async function finish(summary) {
   $("gradeComment").textContent = grade.comment;
   $("totalScore").textContent = summary.total;
 
-  // 라운드 막대
+  // 라운드 막대 — summary.rounds는 채점 라운드(튜토리얼 제외)만
+  const scoredRounds = ROUNDS.filter((r) => r.limit != null);
   const wrap = $("roundBars");
   wrap.innerHTML = "";
   summary.rounds.forEach((s, i) => {
+    const r = scoredRounds[i];
+    const max = r?.bonus ? Math.round(115 * r.bonus) : 115; // 케이크는 상한 173
     const row = document.createElement("div");
     row.className = "bar-row";
-    row.innerHTML = `<span>${ROUNDS[i].label}</span>
-      <div class="bar"><div class="fill" style="width:${Math.min(100, (s / 115) * 100)}%"></div></div>
+    row.innerHTML = `<span>${r ? r.label : `R${i + 1}`}</span>
+      <div class="bar"><div class="fill" style="width:${Math.min(100, (s / max) * 100)}%"></div></div>
       <b>${s}</b>`;
     wrap.appendChild(row);
   });

@@ -3,7 +3,7 @@
 // 하단에 매장 문구 고정.
 // ============================================================
 
-import { PALETTE, GRADES } from "./config.js";
+import { PALETTE, GRADES, ROUNDS } from "./config.js";
 import { drawFace } from "./characters.js";
 
 // 로고 프리로드 — 카드 합성 시점에 로드돼 있으면 워터마크로 얹는다.
@@ -54,7 +54,7 @@ export function buildShareCard({ nickname, total, rounds, rank }) {
   ctx.fillText(String(total), W / 2, 470);
   ctx.font = "24px system-ui, sans-serif";
   ctx.fillStyle = PALETTE.crust;
-  ctx.fillText("/ 575 점", W / 2, 510);
+  ctx.fillText("/ 633 점", W / 2, 510);
 
   // 닉네임 · 순위
   ctx.fillStyle = PALETTE.orange;
@@ -73,12 +73,16 @@ export function buildShareCard({ nickname, total, rounds, rank }) {
     bh = 40,
     gap = 14;
   ctx.textAlign = "left";
+  const scoredRounds = ROUNDS.filter((r) => r.limit != null); // 튜토리얼 제외
   rounds.forEach((s, i) => {
     const y = by + i * (bh + gap);
+    const max = scoredRounds[i]?.bonus
+      ? Math.round(115 * scoredRounds[i].bonus)
+      : 115;
     ctx.fillStyle = "rgba(255,255,255,0.08)";
     ctx.fillRect(bx, y, bw, bh);
     ctx.fillStyle = PALETTE.orange;
-    ctx.fillRect(bx, y, bw * Math.min(1, s / 115), bh);
+    ctx.fillRect(bx, y, bw * Math.min(1, s / max), bh);
     ctx.fillStyle = PALETTE.cream;
     ctx.font = "20px system-ui, sans-serif";
     ctx.fillText(`R${i + 1}`, bx + 8, y + 27);

@@ -255,8 +255,24 @@ h1 span {
   font-size: 30px;
   font-variant-numeric: tabular-nums;
 }
+#timer.warn {
+  color: #f4b740;
+}
 #timer.danger {
   color: #ff5a4d;
+}
+/* 막판 ≤3초 심장박동 */
+#timer.pulse {
+  animation: timer-beat 0.6s ease-in-out infinite;
+}
+@keyframes timer-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.22);
+  }
 }
 #orderText {
   margin-top: 4px;
@@ -271,46 +287,122 @@ h1 span {
   touch-action: none;
 }
 
+/* 주문 말풍선 — 하단 카운터 위 빈 공간에 상주 (피자 안 가림) */
 .bubble {
   position: absolute;
-  left: 50%;
-  top: 62%;
-  transform: translateX(-50%);
+  left: 16px;
+  bottom: 84px;
   background: var(--cream);
   color: var(--ink);
-  padding: 14px 20px;
-  border-radius: 18px;
-  max-width: 80%;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.4;
+  padding: 16px 24px;
+  border-radius: 20px 20px 20px 5px;
+  max-width: min(80%, 360px);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  z-index: 6;
   opacity: 0;
-  transition: opacity 0.3s;
+  transform: translateY(6px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
   pointer-events: none;
 }
 .bubble.active {
   opacity: 1;
+  transform: translateY(0);
 }
+.bubble b {
+  color: var(--orange-deep);
+  font-size: 34px;
+  margin: 0 2px;
+}
+/* 꼬리 — 카운터(아래) 쪽을 향함 */
 .bubble::after {
   content: "";
   position: absolute;
-  bottom: -10px;
-  left: 40px;
-  border: 8px solid transparent;
+  bottom: -9px;
+  left: 22px;
+  border: 7px solid transparent;
   border-top-color: var(--cream);
+}
+
+/* 라운드 시작 — 피자 중앙에서 숫자가 다가오며(커지며) 사라짐 */
+#roundPunch {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 40%; /* 피자 중심(캔버스 40%)에 맞춤 */
+  transform: translateY(-50%);
+  z-index: 8;
+  text-align: center;
+  pointer-events: none;
+}
+#roundPunch .rp-banner {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--cream);
+  font-size: 16px;
+  font-weight: 800;
+  opacity: 0;
+}
+/* 보너스 배너는 잠깐 떠서 유지 후 사라짐 */
+#roundPunch.bonus.show .rp-banner {
+  animation: banner-fade 1.6s ease-out both;
+}
+@keyframes banner-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15%,
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+/* 보너스(케이크) 라운드 — 배경 은은한 황금 글로우 */
+#gameScreen.bonus-round::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 38%,
+    rgba(246, 217, 138, 0.28),
+    rgba(246, 217, 138, 0) 60%
+  );
+  animation: bonus-glow 2.4s ease-in-out infinite;
+}
+@keyframes bonus-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 #doneBtn {
   position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 24px;
+  right: 16px;
   background: var(--green);
   color: var(--cream);
-  z-index: 6;
+  z-index: 7;
 }
 #doneBtn:active {
-  transform: translateX(-50%) scale(0.96);
+  transform: scale(0.96);
 }
 
 /* 라운드 점수 팝업 */
