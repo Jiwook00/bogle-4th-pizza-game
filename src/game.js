@@ -68,11 +68,13 @@ export class Game {
     this.radius = Math.min(this.W, this.H) * 0.28;
   }
 
-  start() {
+  // skipTutorial: 재방문(2회차+)이면 튜토리얼(ROUNDS[0]) 건너뛰고 바로 실전부터.
+  start(skipTutorial = false) {
     // 라운드 이미지 미리 로드(첫 라운드 벡터 깜빡임 방지)
     ROUNDS.forEach((r) => getImage(r.image));
     this.results = [];
-    this.roundIdx = -1;
+    // roundIdx=0 → _nextRound가 1로 올려 튜토리얼(index 0)을 건너뜀
+    this.roundIdx = skipTutorial ? 0 : -1;
     this._nextRound();
     this._loop();
   }

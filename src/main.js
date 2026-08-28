@@ -18,6 +18,10 @@ let lastNickname = localStorage.getItem("bogle4th_nick") || "";
 const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준
 let lastResult = null; // 마지막 recordPlay 결과(공유/랭킹 화면에서 재사용)
 
+// 재방문 판정 — 한 번이라도 플레이했으면 튜토리얼(ROUNDS[0]) 스킵(2회차+). 새로고침해도 유지.
+const PLAYED_KEY = "bogle4th_played";
+const hasPlayedBefore = () => localStorage.getItem(PLAYED_KEY) === "1";
+
 function show(id) {
   document
     .querySelectorAll(".screen")
@@ -30,6 +34,9 @@ function gradeFor(total) {
 }
 
 // ---- 시작 ----
+// 시작하기는 항상 인트로 컷신부터. 튜토리얼 스킵만 재방문(hasPlayedBefore)으로 갈림.
+// (컷신 스킵은 결과화면 "다시 하기"가 startGame을 직접 호출하는 경로에서만 — 같은 세션 재도전.
+//  새로고침하면 메인으로 돌아오므로 다시 startBtn→컷신을 탄다.)
 $("startBtn").addEventListener("click", () => {
   unlock(); // iOS 오디오 언락 (사용자 탭 시점)
   playIntro();
@@ -151,10 +158,12 @@ function playIntro() {
 }
 
 function startGame() {
+  const skipTutorial = hasPlayedBefore();
+  localStorage.setItem(PLAYED_KEY, "1"); // 이후 재도전/재방문은 튜토리얼 스킵
   show("gameScreen");
   game = new Game(canvas);
   wireGame(game);
-  game.start();
+  game.start(skipTutorial);
 }
 
 function wireGame(g) {
