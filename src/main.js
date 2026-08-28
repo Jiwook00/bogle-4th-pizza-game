@@ -254,7 +254,9 @@ function wireGame(g) {
       timer.classList.toggle("danger", ratio <= 0.25);
       timer.classList.toggle("pulse", remaining <= 3);
     }
-    $("doneBtn").style.display = "block";
+    // 코치(튜토리얼) 라운드는 안내가 끝난 뒤 onCoachStart에서만 노출.
+    // 여기서 켜버리면 인트로 연출 딜레이 동안 완성 버튼이 먼저 보임.
+    if (!round.coach) $("doneBtn").style.display = "block";
   };
 
   g.onRoundEnd = () => {
