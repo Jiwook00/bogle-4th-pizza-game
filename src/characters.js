@@ -47,10 +47,12 @@ export function drawFace(ctx, cx, cy, r, expr, colorIdx = 0) {
     ctx.arc(0, r * 0.2, r * 0.3, 0.1 * Math.PI, 0.9 * Math.PI);
     ctx.stroke();
   } else if (expr === "content") {
-    // 점 두 개 + 짧은 일자 입
+    // 점 두 개 + 잔잔한 미소 (제 몫 받아 만족)
     dot(ctx, -ex, ey, r * 0.1);
     dot(ctx, ex, ey, r * 0.1);
-    line(ctx, -r * 0.2, r * 0.35, r * 0.2, r * 0.35);
+    ctx.beginPath();
+    ctx.arc(0, r * 0.2, r * 0.26, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
   } else if (expr === "brow") {
     // 눈썹 한쪽만 올라감 + 애매한 입
     dot(ctx, -ex, ey, r * 0.1);
