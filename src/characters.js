@@ -12,7 +12,7 @@ const FACE_SRC = {
 };
 
 // 스프라이트 배치 튜닝값 (모바일에서 크기/위치 조정 시 여기만 만짐)
-const SPRITE_SCALE = 7.6; // r(≈radius*0.22) 대비 스프라이트 박스 한 변 배수
+const SPRITE_SCALE = 9.12; // r(≈radius*0.22) 대비 스프라이트 박스 한 변 배수
 const ANCHOR_Y = 0.46; // 512 박스 안 캐릭터 세로 중심 비율(위 여백 고려)
 
 const _faceCache = {};
