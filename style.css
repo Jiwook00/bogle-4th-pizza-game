@@ -114,6 +114,10 @@ h1 span {
   background: var(--orange);
   color: #2a1a08;
 }
+/* 시작 화면 랭킹 보기 (재방문자에게만 노출) */
+#startRankBtn {
+  margin-top: 12px;
+}
 
 /* 인트로 컷신 */
 #introScreen {

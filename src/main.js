@@ -60,6 +60,18 @@ $("startBtn").addEventListener("click", () => {
   playIntro();
 });
 
+// 재방문자(첫 판이 아님)에게만 시작 화면에서도 바로 랭킹을 볼 수 있게 노출.
+if (hasPlayedBefore()) $("startRankBtn").hidden = false;
+
+// 랭킹 화면을 벗어날 때 돌아갈 곳 — 시작 화면에서 열면 시작으로, 결과에서 열면 결과로.
+let rankReturnTo = "resultScreen";
+$("startRankBtn").addEventListener("click", async () => {
+  rankReturnTo = "startScreen";
+  $("backToResult").textContent = "메인으로";
+  await renderBoard();
+  show("rankScreen");
+});
+
 // ---- 인트로 컷신 (사장님 둘, 탭으로 진행) ----
 // spk: 말하는 사람, both: 둘 다 화면에 (false면 A만 중앙)
 const INTRO = [
@@ -459,6 +471,8 @@ $("submitBtn").addEventListener("click", async () => {
 
 // ---- 랭킹 보기 ----
 $("viewRankBtn").addEventListener("click", async () => {
+  rankReturnTo = "resultScreen";
+  $("backToResult").textContent = "결과로";
   await renderBoard();
   show("rankScreen");
 });
@@ -497,4 +511,4 @@ async function renderBoard() {
 document
   .querySelectorAll(".retryBtn")
   .forEach((b) => b.addEventListener("click", () => startGame()));
-$("backToResult").addEventListener("click", () => show("resultScreen"));
+$("backToResult").addEventListener("click", () => show(rankReturnTo));
