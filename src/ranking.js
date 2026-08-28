@@ -160,7 +160,7 @@ export async function board(playerId, n = 20) {
 // 최소 욕설 필터 (플레이스홀더 — 실제 배포 전 목록 보강)
 const BADWORDS = ["시발", "씨발", "병신", "fuck", "shit"];
 export function cleanNickname(raw) {
-  let s = (raw || "").trim().slice(0, 8);
+  let s = (raw || "").trim().slice(0, 30);
   for (const w of BADWORDS) {
     if (s.toLowerCase().includes(w)) s = s.replace(new RegExp(w, "gi"), "**");
   }
