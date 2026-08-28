@@ -37,7 +37,7 @@ UI/렌더에 영향 있는 작업을 끝내면 **따로 요청받지 않아도**
 
 - **콘텐츠는 `src/config.js` 한 곳**에 모음 — 라운드/메뉴/이미지 경로/손님 이름/점수 상수/팔레트. 콘텐츠 수정은 되도록 여기만 건드림.
 - **로직 분리**: `geometry`(절단 수학) → `scoring`(공평도 계산) → `game`(상태 머신) → `render`(그리기) → `main`(DOM 오케스트레이션). 순수 함수 위주.
-- **랭킹은 `ranking.js`가 인터페이스 경계** — 현재 localStorage, Supabase 드롭인 교체 가능하게 설계됨(RLS insert-only 예정).
+- **랭킹은 `ranking.js`가 인터페이스 경계** — Supabase(PostgREST) 연동. 쓰기는 `rankings` 테이블(insert-only, RLS), 읽기는 `leaderboard` 뷰(player당 최고 1줄). 동일인 판정은 `player_id`(localStorage), 닉네임은 표시용.
 - 인트로 컷신 로직/대사는 `src/main.js`의 `playIntro()` + `INTRO` 배열. 대사는 화면 하단 게임 대사 박스(`.intro-box`)에 타자기 효과로 출력.
 
 ## 작업 시 주의
@@ -46,3 +46,10 @@ UI/렌더에 영향 있는 작업을 끝내면 **따로 요청받지 않아도**
 - 이미지 asset은 `assets/pizza2/`(라운드 피자), `assets/intro-scene-*`, `assets/boss-*`. 경로는 config 또는 CSS `url()`로 참조.
 - 레티나 좌표는 수정 완료 상태. 새 캔버스 입력 작업 시 DPR 스케일 유지할 것.
 - 커밋 메시지는 한국어 `feat:`/`fix:` 컨벤션 유지.
+
+## DB(Supabase) 작업 시 주의
+
+- **이 프로젝트의 Supabase는 로컬 CLI/MCP와 연결돼 있지 않음.** Supabase MCP 툴은 이 프로젝트에서 권한 없음(permission denied)으로 실패한다. 스키마 조회·마이그레이션을 MCP로 시도하지 말 것.
+- 스키마 변경·임시 데이터 삽입·정리 같은 DB 작업은 **직접 실행하지 말고 SQL을 사용자에게 전달**한다. 사용자가 Supabase 대시보드에서 돌린다.
+- 앱과 동일한 anon key(`config.js`)로 REST insert는 가능하지만(RLS insert-only), 실서비스 테이블이므로 임시 데이터는 식별 가능한 마커(예: 닉네임 `테스트NN`)를 넣고 정리용 DELETE SQL도 함께 제공한다.
+- SQL 작성 시 `rounds` 컬럼 타입(`int[]` vs `jsonb`)을 사용자에게 확인하고 맞춰서 준다.
