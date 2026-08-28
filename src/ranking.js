@@ -1,19 +1,58 @@
 // ============================================================
-// 랭킹 — Supabase(PostgREST) 구현.
-// 인터페이스(submit/board/validate/cleanNickname)는 localStorage 시절과 동일.
-// 정책: insert-only + 공개 read (RLS). 이번 단계는 중복 등록 허용
-//       (같은 닉네임이 여러 줄 올 수 있음). 정렬: 점수 내림차순,
-//       동점은 먼저 등록(created_at 오름차순)이 위.
+// 랭킹 — Supabase(PostgREST). 디바이스 ID 계정 모델.
+//
+// - 매 판 rankings에 계속 쌓는다(갱신·삭제 없음, RLS insert-only).
+// - 동일인 판정은 player_id(localStorage). 닉네임은 표시용일 뿐.
+// - "player당 최고점 한 줄" 랭킹은 읽는 시점에 leaderboard 뷰가 처리.
+// - 정렬: 점수 내림차순, 동점은 먼저 등록(created_at 오름차순)이 위.
 // ============================================================
 
 import { MAX_SCORE, SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 
-const REST = `${SUPABASE_URL}/rest/v1/rankings`;
+const REST = `${SUPABASE_URL}/rest/v1/rankings`; // 쓰기(insert) 대상
+const VIEW = `${SUPABASE_URL}/rest/v1/leaderboard`; // 읽기(player당 최고 1줄)
 const HEADERS = {
   apikey: SUPABASE_ANON_KEY,
   Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
   "Content-Type": "application/json",
 };
+
+const PID_KEY = "bogle4th_pid";
+
+// UUID v4. crypto.randomUUID는 secure context(https/localhost) 전용이라
+// http 실기기 테스트에서 undefined → getRandomValues, 최후엔 Math.random 폴백.
+function uuidv4() {
+  const c = globalThis.crypto;
+  if (c?.randomUUID) return c.randomUUID();
+  if (c?.getRandomValues) {
+    const b = c.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0"));
+    return `${h.slice(0, 4).join("")}-${h.slice(4, 6).join("")}-${h
+      .slice(6, 8)
+      .join("")}-${h.slice(8, 10).join("")}-${h.slice(10, 16).join("")}`;
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => {
+    const r = (Math.random() * 16) | 0;
+    return (ch === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+// 첫 진입 시 player_id 생성·저장. 이게 계정 역할을 한다.
+export function ensurePlayerId() {
+  let id = null;
+  try {
+    id = localStorage.getItem(PID_KEY);
+  } catch {}
+  if (!id) {
+    id = uuidv4();
+    try {
+      localStorage.setItem(PID_KEY, id);
+    } catch {}
+  }
+  return id;
+}
 
 // 어뷰징 최소 검증(클라이언트): 총점 상한 + 라운드 합 일치.
 // 서버에서도 RLS CHECK(0~MAX_SCORE)로 한 번 더 막는다.
@@ -24,9 +63,9 @@ export function validate(score, rounds) {
   return true;
 }
 
-// PostgREST count=exact 헤더로 총 개수만 싸게 얻는다(Content-Range: */N).
-async function countRows(query) {
-  const res = await fetch(`${REST}?select=id&${query}`, {
+// count=exact 헤더로 개수만 싸게 얻는다(Content-Range: */N).
+async function countRows(base, query) {
+  const res = await fetch(`${base}?select=player_id&${query}`, {
     method: "GET",
     headers: { ...HEADERS, Prefer: "count=exact", Range: "0-0" },
   });
@@ -35,35 +74,65 @@ async function countRows(query) {
   return Number(range.split("/")[1]) || 0;
 }
 
-// 한 기록의 순위 = 1 + (더 높은 점수 수) + (동점이면서 먼저 등록된 수)
+// 한 기록의 순위 = 1 + (더 높은 점수 수) + (동점이면서 먼저 등록된 수). 대상은 뷰.
 async function rankOf(score, createdAt) {
   const [higher, tieEarlier] = await Promise.all([
-    countRows(`score=gt.${score}`),
+    countRows(VIEW, `score=gt.${score}`),
     countRows(
+      VIEW,
       `score=eq.${score}&created_at=lt.${encodeURIComponent(createdAt)}`,
     ),
   ]);
   return 1 + higher + tieEarlier;
 }
 
-// 반환: { ok, rank } — ok=false면 검증 실패
-export async function submit({ nickname, score, rounds }) {
-  if (!validate(score, rounds)) return { ok: false, reason: "invalid" };
-  const res = await fetch(REST, {
-    method: "POST",
-    headers: { ...HEADERS, Prefer: "return=representation" },
-    body: JSON.stringify({ nickname, score, rounds }),
-  });
-  if (!res.ok) throw new Error(`submit failed: ${res.status}`);
+// 내 최고 기록(뷰의 1줄) + 순위. 없으면 null.
+async function myStanding(playerId) {
+  const res = await fetch(
+    `${VIEW}?select=nickname,score,created_at&player_id=eq.${playerId}&limit=1`,
+    { method: "GET", headers: HEADERS },
+  );
+  if (!res.ok) throw new Error(`standing failed: ${res.status}`);
   const [row] = await res.json();
+  if (!row) return null;
   const rank = await rankOf(row.score, row.created_at);
-  return { ok: true, rank };
+  return {
+    best: row.score,
+    createdAt: row.created_at,
+    nickname: row.nickname,
+    rank,
+  };
 }
 
-// 상위 n + 내 순위(같은 닉네임 중 최고 기록 기준)
-export async function board(nickname, n = 20) {
+// 한 판 기록 — 메인은 이것만 부르면 됨.
+// 반환: { ok, score, best, rank, prevBest, prevRank, isNewHigh, total }
+export async function recordPlay({ playerId, nickname, score, rounds }) {
+  if (!validate(score, rounds)) return { ok: false, reason: "invalid" };
+  const prev = await myStanding(playerId); // 이번 판 넣기 전 내 최고/순위
+  const res = await fetch(REST, {
+    method: "POST",
+    headers: { ...HEADERS, Prefer: "return=minimal" },
+    body: JSON.stringify({ player_id: playerId, nickname, score, rounds }),
+  });
+  if (!res.ok) throw new Error(`record failed: ${res.status}`);
+  const now = await myStanding(playerId); // 뷰가 새 최고를 반영
+  const total = await countRows(VIEW, "player_id=not.is.null"); // 참가자 수(뷰=player당 1줄)
+  return {
+    ok: true,
+    score,
+    best: now.best,
+    rank: now.rank,
+    prevBest: prev ? prev.best : null,
+    prevRank: prev ? prev.rank : null,
+    isNewHigh: !prev || score > prev.best,
+    total,
+  };
+}
+
+// 상위 n + 내 순위. 하이라이트는 닉네임이 아니라 player_id로 판정(동명이인 대응).
+export async function board(playerId, n = 20) {
   const topRes = await fetch(
-    `${REST}?select=nickname,score,created_at&order=score.desc,created_at.asc&limit=${n}`,
+    `${VIEW}?select=player_id,nickname,score,created_at&order=score.desc,created_at.asc&limit=${n}`,
     { method: "GET", headers: { ...HEADERS, Prefer: "count=exact" } },
   );
   if (!topRes.ok) throw new Error(`board failed: ${topRes.status}`);
@@ -73,17 +142,16 @@ export async function board(nickname, n = 20) {
   const top = rows.map((e, i) => ({ rank: i + 1, ...e }));
 
   let me = null;
-  if (nickname) {
-    const meRes = await fetch(
-      `${REST}?select=nickname,score,created_at&nickname=eq.${encodeURIComponent(
-        nickname,
-      )}&order=score.desc,created_at.asc&limit=1`,
-      { method: "GET", headers: HEADERS },
-    );
-    if (meRes.ok) {
-      const [best] = await meRes.json();
-      if (best)
-        me = { rank: await rankOf(best.score, best.created_at), ...best };
+  if (playerId) {
+    const s = await myStanding(playerId);
+    if (s) {
+      me = {
+        rank: s.rank,
+        player_id: playerId,
+        nickname: s.nickname,
+        score: s.best,
+        created_at: s.createdAt,
+      };
     }
   }
   return { top, me, total };

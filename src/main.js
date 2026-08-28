@@ -8,13 +8,15 @@ import { Game } from "./game.js";
 import { ROUNDS, GRADES } from "./config.js";
 import { faceFor } from "./scoring.js";
 import { unlock, sfx } from "./audio.js";
-import { submit, board, cleanNickname } from "./ranking.js";
+import { recordPlay, board, cleanNickname, ensurePlayerId } from "./ranking.js";
 import { buildShareCard, downloadCard } from "./share.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("game");
 let game;
 let lastNickname = localStorage.getItem("bogle4th_nick") || "";
+const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준
+let lastResult = null; // 마지막 recordPlay 결과(공유/랭킹 화면에서 재사용)
 
 function show(id) {
   document
@@ -335,12 +337,73 @@ async function finish(summary) {
     wrap.appendChild(row);
   });
 
-  $("nickInput").value = lastNickname;
-  $("submitState").textContent = "";
   window._summary = summary;
+
+  // 결과 화면 분기: 닉네임이 저장돼 있으면(재방문) 닉 입력을 건너뛰고 자동 등록.
+  const returning = !!lastNickname;
+  $("playResult").innerHTML = "";
+  $("playResult").className = "play-result";
+  $("submitState").textContent = "";
+  $("nickRow").hidden = returning;
+  $("submitBtn").hidden = returning;
+  $("viewRankBtn").hidden = !returning;
+
+  if (returning) {
+    $("nickInput").value = lastNickname;
+    await autoRecord(summary);
+  } else {
+    $("nickInput").value = "";
+  }
 }
 
-// ---- 랭킹 등록 ----
+// 재도전(2회차+): 결과 즉시 자동 등록 후 3-state 피드백.
+async function autoRecord(summary) {
+  $("submitState").textContent = "기록 중…";
+  try {
+    const res = await recordPlay({
+      playerId,
+      nickname: lastNickname,
+      score: summary.total,
+      rounds: summary.rounds,
+    });
+    if (!res.ok) {
+      $("submitState").textContent = "점수 검증 실패";
+      return;
+    }
+    lastResult = res;
+    $("submitState").textContent = "";
+    renderPlayResult(res);
+  } catch (e) {
+    $("submitState").textContent = "기록 실패 — 나중에 다시";
+  }
+}
+
+// 갱신/유지 3-state 결과 메시지. 기록이 내려가지 않음을 분명히 보여준다.
+function renderPlayResult(res) {
+  const el = $("playResult");
+  if (res.prevBest == null) {
+    el.className = "play-result is-new";
+    el.innerHTML = `<div class="pr-head">등록 완료! <b>${res.score}</b>점</div>
+      <div class="pr-sub">현재 <b>${res.rank}</b>위</div>`;
+  } else if (res.isNewHigh) {
+    el.className = "play-result is-new";
+    const up = res.score - res.prevBest;
+    const rankMoved = res.prevRank !== res.rank;
+    el.innerHTML = `<div class="pr-head">🎉 최고 기록! <b>${res.score}</b>점</div>
+      <div class="pr-sub">이전 최고 ${res.prevBest} · <span class="pr-up">▲${up}</span></div>
+      <div class="pr-rank">${
+        rankMoved
+          ? `${res.prevRank}위 <span class="pr-arrow">→</span> <b>${res.rank}위</b>`
+          : `<b>${res.rank}위</b>`
+      }</div>`;
+  } else {
+    el.className = "play-result is-keep";
+    el.innerHTML = `<div class="pr-head">이번 판 <b>${res.score}</b>점</div>
+      <div class="pr-sub">내 최고 <b>${res.best}</b>점 (${res.rank}위) — 기록은 그대로예요</div>`;
+  }
+}
+
+// ---- 랭킹 등록 (첫 판: 닉네임 입력) ----
 $("submitBtn").addEventListener("click", async () => {
   const nickname = cleanNickname($("nickInput").value);
   const summary = window._summary;
@@ -348,7 +411,8 @@ $("submitBtn").addEventListener("click", async () => {
   lastNickname = nickname;
   $("submitState").textContent = "등록 중…";
   try {
-    const res = await submit({
+    const res = await recordPlay({
+      playerId,
       nickname,
       score: summary.total,
       rounds: summary.rounds,
@@ -357,27 +421,49 @@ $("submitBtn").addEventListener("click", async () => {
       $("submitState").textContent = "점수 검증 실패";
       return;
     }
-    await renderBoard(nickname);
-    show("rankScreen");
+    lastResult = res;
+    $("submitState").textContent = "";
+    $("nickRow").hidden = true;
+    $("submitBtn").hidden = true;
+    $("viewRankBtn").hidden = false;
+    renderPlayResult(res);
   } catch (e) {
     $("submitState").textContent = "등록 실패 — 나중에 다시";
   }
 });
 
-async function renderBoard(nickname) {
-  const { top, me } = await board(nickname, 20);
+// ---- 랭킹 보기 ----
+$("viewRankBtn").addEventListener("click", async () => {
+  await renderBoard();
+  show("rankScreen");
+});
+
+// HTML 특수문자 이스케이프 — 남의 닉네임을 그리므로 저장형 XSS 차단.
+function esc(s) {
+  return String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+}
+
+async function renderBoard() {
+  const { top, me } = await board(playerId, 20);
   const list = $("rankList");
   list.innerHTML = "";
   top.forEach((e) => {
+    const mine = e.player_id === playerId;
     const row = document.createElement("div");
-    row.className = "rank-row" + (e.nickname === nickname ? " me" : "");
-    row.innerHTML = `<span class="rk">${e.rank}</span><span class="nm">${e.nickname}</span><b>${e.score}</b>`;
+    row.className = "rank-row" + (mine ? " me" : "");
+    row.innerHTML = `<span class="rk">${e.rank}</span><span class="nm">${esc(e.nickname)}</span><b>${e.score}</b>`;
     list.appendChild(row);
   });
   if (me && me.rank > 20) {
     const row = document.createElement("div");
     row.className = "rank-row me";
-    row.innerHTML = `<span class="rk">${me.rank}</span><span class="nm">${me.nickname}</span><b>${me.score}</b>`;
+    row.innerHTML = `<span class="rk">${me.rank}</span><span class="nm">${esc(me.nickname)}</span><b>${me.score}</b>`;
     list.appendChild(row);
   }
 }
@@ -386,12 +472,11 @@ async function renderBoard(nickname) {
 $("shareBtn").addEventListener("click", async () => {
   const nickname = lastNickname || "주방알바";
   const s = window._summary;
-  const { me } = await board(nickname, 20);
   const card = buildShareCard({
     nickname,
     total: s.total,
     rounds: s.rounds,
-    rank: me ? me.rank : null,
+    rank: lastResult ? lastResult.rank : null,
   });
   downloadCard(card, `bogle4th-${nickname}.png`);
 });

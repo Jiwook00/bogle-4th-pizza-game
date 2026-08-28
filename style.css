@@ -652,6 +652,49 @@ h2 {
   color: #8a7a66;
 }
 
+/* 재도전 결과 피드백 (갱신/유지 3-state) */
+.play-result {
+  width: 100%;
+  max-width: 340px;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.5;
+}
+.play-result:empty {
+  display: none;
+}
+.play-result .pr-head {
+  font-size: 18px;
+  color: var(--cream);
+}
+.play-result .pr-head b {
+  color: var(--orange);
+}
+.play-result .pr-sub {
+  font-size: 13px;
+  color: var(--crust);
+}
+.play-result .pr-up {
+  color: var(--green);
+  font-weight: 700;
+}
+.play-result .pr-rank {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--cream);
+}
+.play-result .pr-rank b {
+  color: var(--orange);
+}
+.play-result .pr-arrow {
+  color: var(--green);
+  font-weight: 700;
+}
+/* 갱신 실패: 기록이 그대로임을 차분하게 */
+.play-result.is-keep .pr-head b {
+  color: var(--cream);
+}
+
 /* 랭킹 */
 .rank-list {
   width: 100%;
