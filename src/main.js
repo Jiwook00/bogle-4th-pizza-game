@@ -9,10 +9,30 @@ import { ROUNDS, GRADES } from "./config.js";
 import { faceFor } from "./scoring.js";
 import { unlock, sfx } from "./audio.js";
 import { recordPlay, board, cleanNickname, ensurePlayerId } from "./ranking.js";
+import { getImage } from "./render.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("game");
 let game;
+
+// 에셋 선(先)로드 — 시작화면 떠 있는 동안 모든 이미지를 미리 받아 디코드.
+// 라운드 피자는 render.js와 같은 캐시(getImage)를 데워 놓아 벡터 폴백 깜빡임 방지.
+// 인트로/보스 이미지는 CSS/DOM에서 늦게 뜨며 겹쳐 보이는 현상 완화.
+(function preloadAssets() {
+  ROUNDS.forEach((r) => {
+    const img = getImage(r.image);
+    if (img && img.decode) img.decode().catch(() => {});
+  });
+  [
+    "assets/boss-a.png",
+    "assets/boss-b.png",
+    "assets/intro-scene-bg.png",
+    "assets/intro-scene-front.png",
+  ].forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
+})();
 let lastNickname = localStorage.getItem("bogle4th_nick") || "";
 const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준
 

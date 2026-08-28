@@ -262,14 +262,17 @@ export class Game {
     // 라운드별 피자/케이크 이미지. 이미지 쓰면 벡터 토핑은 생략.
     const pizzaImg = getImage(this.round?.image);
     const useImg = pizzaImg && pizzaImg.complete && pizzaImg.naturalWidth;
+    // 이미지가 있어야 하는 라운드인데 아직 로딩 전이면 중립 도우판(토핑 없음)으로.
+    const pending = !!this.round?.image && !useImg;
     const pieceOpts = {
       base: topping?.base,
       image: pizzaImg,
       radius: this.radius,
+      pending,
     };
     if (this.state === "intro" || this.state === "round") {
       drawPieces(ctx, this.pieces, this.center, 0, false, pieceOpts);
-      if (!useImg)
+      if (!useImg && !pending)
         drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       if (this.state === "round") drawStroke(ctx, this.input.points);
     } else if (this.state === "reveal" || this.state === "scored") {
@@ -278,7 +281,7 @@ export class Game {
       if (rv.phase === "spread") explode = rv.t / REVEAL.spread;
       else explode = 1;
       drawPieces(ctx, this.pieces, this.center, explode, true, pieceOpts);
-      if (!useImg)
+      if (!useImg && !pending)
         drawToppings(ctx, this.center, this.radius, this.roundIdx + 2, topping);
       const appear = this.reactions.some((r) => r.show)
         ? Math.min(1, rv.phase === "faces" ? rv.t / REVEAL.faces : 1)

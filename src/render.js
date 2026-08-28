@@ -113,7 +113,12 @@ export function drawPieces(
   showCrumbColor = false,
   opts = {},
 ) {
-  const { base = PALETTE.orange, image = null, radius = 0 } = opts;
+  const {
+    base = PALETTE.orange,
+    image = null,
+    radius = 0,
+    pending = false,
+  } = opts;
   const useImg = image && image.complete && image.naturalWidth && radius > 0;
   // 검출된 원판(fit.r px)을 게임 반지름에 맞춰 스케일 → 배경/크기 차이 자동 보정
   let dw = 0,
@@ -150,6 +155,13 @@ export function drawPieces(
       // 잘린 면을 살짝 표시(조각 벌어질 때 경계 보이게)
       ctx.lineWidth = 2;
       ctx.strokeStyle = "rgba(0,0,0,0.22)";
+      ctx.stroke();
+    } else if (pending && !(p.isCrumb && showCrumbColor)) {
+      // 이미지 로딩 중: 옛 피자처럼 안 보이게 중립 도우판(토핑 없음)만
+      ctx.fillStyle = PALETTE.cream;
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = PALETTE.crust;
       ctx.stroke();
     } else {
       // 벡터 폴백: 크러스트 테두리 + 치즈 채움
