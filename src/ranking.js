@@ -11,6 +11,7 @@ import { MAX_SCORE, SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
 
 const REST = `${SUPABASE_URL}/rest/v1/rankings`; // 쓰기(insert) 대상
 const VIEW = `${SUPABASE_URL}/rest/v1/leaderboard`; // 읽기(player당 최고 1줄)
+const EVENTS = `${SUPABASE_URL}/rest/v1/events`; // 퍼널 이벤트(visit/game_start/complete)
 const HEADERS = {
   apikey: SUPABASE_ANON_KEY,
   Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -127,6 +128,19 @@ export async function recordPlay({ playerId, nickname, score, rounds }) {
     isNewHigh: !prev || score > prev.best,
     total,
   };
+}
+
+// 퍼널 이벤트 1건 기록(visit/game_start/complete). fire-and-forget —
+// 실패해도 게임 흐름엔 절대 영향 없음. keepalive로 새로고침/이탈 중에도 전송 보장.
+export function logEvent(type, playerId) {
+  try {
+    fetch(EVENTS, {
+      method: "POST",
+      headers: { ...HEADERS, Prefer: "return=minimal" },
+      body: JSON.stringify({ player_id: playerId, type }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
 }
 
 // 상위 n + 내 순위. 하이라이트는 닉네임이 아니라 player_id로 판정(동명이인 대응).

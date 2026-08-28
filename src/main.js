@@ -8,7 +8,13 @@ import { Game } from "./game.js";
 import { ROUNDS, GRADES } from "./config.js";
 import { faceFor } from "./scoring.js";
 import { unlock, sfx } from "./audio.js";
-import { recordPlay, board, cleanNickname, ensurePlayerId } from "./ranking.js";
+import {
+  recordPlay,
+  board,
+  cleanNickname,
+  ensurePlayerId,
+  logEvent,
+} from "./ranking.js";
 import { getImage } from "./render.js";
 import { preloadFaces } from "./characters.js";
 
@@ -37,6 +43,7 @@ let game;
 })();
 let lastNickname = localStorage.getItem("bogle4th_nick") || "";
 const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준
+logEvent("visit", playerId); // 퍼널 1단계: 방문(새로고침마다. 순방문자는 대시보드가 distinct로 집계)
 
 // 재방문 판정 — 한 번이라도 플레이했으면 튜토리얼(ROUNDS[0]) 스킵(2회차+). 새로고침해도 유지.
 const PLAYED_KEY = "bogle4th_played";
@@ -190,6 +197,7 @@ function playIntro() {
 }
 
 function startGame() {
+  logEvent("game_start", playerId); // 퍼널 2단계: 게임 시작(재도전 포함)
   const skipTutorial = hasPlayedBefore();
   localStorage.setItem(PLAYED_KEY, "1"); // 이후 재도전/재방문은 튜토리얼 스킵
   show("gameScreen");
@@ -357,6 +365,7 @@ $("doneBtn").addEventListener("click", () => game && game.endRound());
 
 // ---- 결과 ----
 async function finish(summary) {
+  logEvent("complete", playerId); // 퍼널 3단계: 완주(결과 화면 도달 = 5라운드 종료)
   show("resultScreen");
   const grade = gradeFor(summary.total);
   $("gradeLabel").textContent = grade.label;
