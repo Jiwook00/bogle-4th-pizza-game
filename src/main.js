@@ -450,7 +450,7 @@ function esc(s) {
 }
 
 async function renderBoard() {
-  const { top, me } = await board(playerId, 20);
+  const { top, me } = await board(playerId, 100);
   const list = $("rankList");
   list.innerHTML = "";
   top.forEach((e) => {
@@ -460,7 +460,7 @@ async function renderBoard() {
     row.innerHTML = `<span class="rk">${e.rank}</span><span class="nm">${esc(e.nickname)}</span><b>${e.score}</b>`;
     list.appendChild(row);
   });
-  if (me && me.rank > 20) {
+  if (me && me.rank > 100) {
     const row = document.createElement("div");
     row.className = "rank-row me";
     row.innerHTML = `<span class="rk">${me.rank}</span><span class="nm">${esc(me.nickname)}</span><b>${me.score}</b>`;
