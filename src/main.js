@@ -9,14 +9,12 @@ import { ROUNDS, GRADES } from "./config.js";
 import { faceFor } from "./scoring.js";
 import { unlock, sfx } from "./audio.js";
 import { recordPlay, board, cleanNickname, ensurePlayerId } from "./ranking.js";
-import { buildShareCard, downloadCard } from "./share.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("game");
 let game;
 let lastNickname = localStorage.getItem("bogle4th_nick") || "";
 const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준
-let lastResult = null; // 마지막 recordPlay 결과(공유/랭킹 화면에서 재사용)
 
 // 재방문 판정 — 한 번이라도 플레이했으면 튜토리얼(ROUNDS[0]) 스킵(2회차+). 새로고침해도 유지.
 const PLAYED_KEY = "bogle4th_played";
@@ -379,7 +377,6 @@ async function autoRecord(summary) {
       $("submitState").textContent = "점수 검증 실패";
       return;
     }
-    lastResult = res;
     $("submitState").textContent = "";
     renderPlayResult(res);
   } catch (e) {
@@ -430,7 +427,6 @@ $("submitBtn").addEventListener("click", async () => {
       $("submitState").textContent = "점수 검증 실패";
       return;
     }
-    lastResult = res;
     $("submitState").textContent = "";
     $("nickRow").hidden = true;
     $("submitBtn").hidden = true;
@@ -476,19 +472,6 @@ async function renderBoard() {
     list.appendChild(row);
   }
 }
-
-// ---- 공유 이미지 ----
-$("shareBtn").addEventListener("click", async () => {
-  const nickname = lastNickname || "주방알바";
-  const s = window._summary;
-  const card = buildShareCard({
-    nickname,
-    total: s.total,
-    rounds: s.rounds,
-    rank: lastResult ? lastResult.rank : null,
-  });
-  downloadCard(card, `bogle4th-${nickname}.png`);
-});
 
 // ---- 재도전 ----
 document
