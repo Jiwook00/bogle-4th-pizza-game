@@ -160,3 +160,11 @@ export const MIN_CUTS = { 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 3, 8: 4 };
 
 // 채점 라운드 5개(튜토리얼 제외): r1~r4 각 115 + 케이크 round(115×1.5)=173
 export const MAX_SCORE = 633;
+
+// ------------------------------------------------------------
+// Supabase 랭킹 백엔드 (공개용 값 — 프론트에 그대로 노출되는 게 정상)
+// URL/anon 키만 두면 됨. 관리자(service_role)·PAT는 절대 여기 두지 말 것.
+// ------------------------------------------------------------
+export const SUPABASE_URL = "https://oeaibswtpcakeggcfbmj.supabase.co";
+export const SUPABASE_ANON_KEY =
+  "sb_publishable_2cpqaJQFb4gKYbPGEKFYmw_PoM4gTlp";
