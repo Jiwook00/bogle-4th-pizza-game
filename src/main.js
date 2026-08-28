@@ -10,6 +10,7 @@ import { faceFor } from "./scoring.js";
 import { unlock, sfx } from "./audio.js";
 import { recordPlay, board, cleanNickname, ensurePlayerId } from "./ranking.js";
 import { getImage } from "./render.js";
+import { preloadFaces } from "./characters.js";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("game");
@@ -32,6 +33,7 @@ let game;
     const img = new Image();
     img.src = src;
   });
+  preloadFaces(); // 조각 리액션 마스코트 4종
 })();
 let lastNickname = localStorage.getItem("bogle4th_nick") || "";
 const playerId = ensurePlayerId(); // 첫 진입 시 생성·저장, 이후 동일인 판정 기준

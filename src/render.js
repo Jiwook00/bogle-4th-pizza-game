@@ -4,7 +4,7 @@
 // ============================================================
 
 import { PALETTE } from "./config.js";
-import { drawFace } from "./characters.js";
+import { drawReactionFace } from "./characters.js";
 
 // 이미지 캐시 — src별로 한 번만 로드. 로드 완료 전엔 null 취급(벡터 폴백).
 const _imgCache = {};
@@ -222,7 +222,7 @@ export function drawReactions(ctx, reactions, appear) {
     const r = rx.r * (0.6 + 0.4 * pop);
     ctx.save();
     ctx.globalAlpha = pop;
-    drawFace(ctx, rx.x, rx.y, r, rx.expr, rx.colorIdx);
+    drawReactionFace(ctx, rx.x, rx.y, r, rx.expr);
     ctx.restore();
   }
 }
