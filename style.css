@@ -744,6 +744,23 @@ h2 {
 #nickInput::placeholder {
   color: #8a7a66;
 }
+#nickInput.is-shake {
+  animation: nick-shake 0.4s;
+}
+@keyframes nick-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
 
 /* 재도전 결과 피드백 (갱신/유지 3-state) */
 .play-result {

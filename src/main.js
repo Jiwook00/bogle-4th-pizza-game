@@ -456,7 +456,15 @@ function renderPlayResult(res) {
 
 // ---- 랭킹 등록 (첫 판: 닉네임 입력) ----
 $("submitBtn").addEventListener("click", async () => {
-  const nickname = cleanNickname($("nickInput").value);
+  const nickInput = $("nickInput");
+  if (!nickInput.value.trim()) {
+    nickInput.classList.remove("is-shake");
+    void nickInput.offsetWidth; // 애니메이션 재시작용 리플로우
+    nickInput.classList.add("is-shake");
+    nickInput.focus();
+    return;
+  }
+  const nickname = cleanNickname(nickInput.value);
   const summary = window._summary;
   localStorage.setItem("bogle4th_nick", nickname);
   lastNickname = nickname;
